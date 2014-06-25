@@ -23,6 +23,6 @@ import at.ac.ait.ubicity.commons.interfaces.UbicityPlugin;
  *
  * @author jan
  */
-public interface CouchbaseAddOn extends UbicityPlugin {
+public interface CouchbasePlugin extends UbicityPlugin {
 
 }

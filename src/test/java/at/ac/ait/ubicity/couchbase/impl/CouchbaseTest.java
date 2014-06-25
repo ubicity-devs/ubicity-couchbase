@@ -2,9 +2,10 @@ package at.ac.ait.ubicity.couchbase.impl;
 
 import java.util.Arrays;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
-import at.ac.ait.ubicity.couchbase.JsonClass;
+import at.ac.ait.ubicity.contracts.test.TestDTO;
 
 import com.google.gson.Gson;
 
@@ -13,20 +14,21 @@ public class CouchbaseTest {
 	static Gson gson = new Gson();
 
 	@Test
+	@Ignore
 	public void writeTest() {
 
-		CouchbaseAddOnImpl cb = new CouchbaseAddOnImpl();
+		CouchbasePluginImpl cb = new CouchbasePluginImpl();
 		cb.init();
 
 		Gson gson = new Gson();
 
-		JsonClass json = new JsonClass("user", "password", "email",
-				Arrays.asList("all", "user-23"));
+		TestDTO json = new TestDTO("user", "password", "email", Arrays.asList(
+				"all", "user-23"));
 
 		cb.client.add(json.getId(), json.toJson());
 
-		JsonClass json1 = gson.fromJson(cb.client.get(json.getId()).toString(),
-				JsonClass.class);
+		TestDTO json1 = gson.fromJson(cb.client.get(json.getId()).toString(),
+				TestDTO.class);
 
 		System.out.println(json1.toJson());
 

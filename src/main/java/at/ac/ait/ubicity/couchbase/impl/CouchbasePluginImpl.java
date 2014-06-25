@@ -30,30 +30,35 @@ import org.apache.log4j.Logger;
 import at.ac.ait.ubicity.commons.broker.BrokerConsumer;
 import at.ac.ait.ubicity.commons.broker.events.EventEntry;
 import at.ac.ait.ubicity.commons.util.PropertyLoader;
-import at.ac.ait.ubicity.couchbase.CouchbaseAddOn;
+import at.ac.ait.ubicity.couchbase.CouchbasePlugin;
 
 import com.couchbase.client.CouchbaseClient;
 
 @PluginImplementation
-public class CouchbaseAddOnImpl extends BrokerConsumer implements
-		CouchbaseAddOn {
+public class CouchbasePluginImpl extends BrokerConsumer implements
+		CouchbasePlugin {
 
 	private String name;
 	CouchbaseClient client;
 
-	protected static Logger logger = Logger.getLogger(CouchbaseAddOnImpl.class);
+	protected static Logger logger = Logger
+			.getLogger(CouchbasePluginImpl.class);
 
 	@Init
 	public void init() {
 		PropertyLoader config = new PropertyLoader(
-				CouchbaseAddOnImpl.class.getResource("/couchbase.cfg"));
-		this.name = config.getString("addon.couchbase.name");
+				CouchbasePluginImpl.class.getResource("/couchbase.cfg"));
+		this.name = config.getString("plugin.couchbase.name");
 
 		try {
-			List<URI> hosts = Arrays.asList(new URI(config
-					.getString("addon.couchbase.host")));
-			String bucket = config.getString("addon.couchbase.bucket.name");
-			String password = config.getString("addon.couchbase.bucket.pwd");
+
+			String host = config.getString("plugin.couchbase.host");
+			host = host + ":" + config.getString("env.couchbase.host_port");
+			host = host + ":/pools";
+
+			List<URI> hosts = Arrays.asList(new URI(host));
+			String bucket = config.getString("plugin.couchbase.bucket.name");
+			String password = config.getString("plugin.couchbase.bucket.pwd");
 			client = new CouchbaseClient(hosts, bucket, password);
 		} catch (Exception e) {
 			logger.error("During init caught exc.", e);
