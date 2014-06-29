@@ -51,6 +51,8 @@ public class CouchbasePluginImpl extends BrokerConsumer implements
 		this.name = config.getString("plugin.couchbase.name");
 
 		try {
+			// super.init(config.getString("plugin.couchbase.broker.user"),
+			// config.getString("plugin.couchbase.broker.pwd"));
 
 			String host = config.getString("plugin.couchbase.host");
 			host = host + ":" + config.getString("env.couchbase.host_port");
@@ -60,6 +62,9 @@ public class CouchbasePluginImpl extends BrokerConsumer implements
 			String bucket = config.getString("plugin.couchbase.bucket.name");
 			String password = config.getString("plugin.couchbase.bucket.pwd");
 			client = new CouchbaseClient(hosts, bucket, password);
+
+			// setConsumer(this,
+			// config.getString("plugin.couchbase.broker.dest"));
 		} catch (Exception e) {
 			logger.error("During init caught exc.", e);
 		}
