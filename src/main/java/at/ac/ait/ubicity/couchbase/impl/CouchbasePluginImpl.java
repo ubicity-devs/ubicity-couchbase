@@ -17,8 +17,10 @@
  */
 package at.ac.ait.ubicity.couchbase.impl;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import net.xeoh.plugins.base.annotations.PluginImplementation;
@@ -29,6 +31,7 @@ import org.apache.log4j.Logger;
 
 import at.ac.ait.ubicity.commons.broker.BrokerConsumer;
 import at.ac.ait.ubicity.commons.broker.events.EventEntry;
+import at.ac.ait.ubicity.commons.broker.events.EventEntry.Property;
 import at.ac.ait.ubicity.commons.util.PropertyLoader;
 import at.ac.ait.ubicity.couchbase.CouchbasePlugin;
 
@@ -39,11 +42,13 @@ public class CouchbasePluginImpl extends BrokerConsumer implements
 		CouchbasePlugin {
 
 	private String name;
-	CouchbaseClient client;
+	private static HashMap<String, CouchbaseClient> knownBuckets = new HashMap<String, CouchbaseClient>();
+	private List<URI> hosts;
 
 	protected static Logger logger = Logger
 			.getLogger(CouchbasePluginImpl.class);
 
+	@Override
 	@Init
 	public void init() {
 		PropertyLoader config = new PropertyLoader(
@@ -51,20 +56,16 @@ public class CouchbasePluginImpl extends BrokerConsumer implements
 		this.name = config.getString("plugin.couchbase.name");
 
 		try {
-			// super.init(config.getString("plugin.couchbase.broker.user"),
-			// config.getString("plugin.couchbase.broker.pwd"));
+			super.init(config.getString("plugin.couchbase.broker.user"),
+					config.getString("plugin.couchbase.broker.pwd"));
 
 			String host = config.getString("plugin.couchbase.host");
 			host = host + ":" + config.getString("env.couchbase.host_port");
-			host = host + ":/pools";
+			host = host + "/pools";
 
-			List<URI> hosts = Arrays.asList(new URI(host));
-			String bucket = config.getString("plugin.couchbase.bucket.name");
-			String password = config.getString("plugin.couchbase.bucket.pwd");
-			client = new CouchbaseClient(hosts, bucket, password);
+			this.hosts = Arrays.asList(new URI(host));
 
-			// setConsumer(this,
-			// config.getString("plugin.couchbase.broker.dest"));
+			setConsumer(this, config.getString("plugin.couchbase.broker.dest"));
 		} catch (Exception e) {
 			logger.error("During init caught exc.", e);
 		}
@@ -76,17 +77,49 @@ public class CouchbasePluginImpl extends BrokerConsumer implements
 	@Shutdown
 	public void shutdown() {
 		super.shutdown();
-		if (client != null) {
-			client.shutdown();
+
+		for (CouchbaseClient client : knownBuckets.values()) {
+			if (client != null) {
+				client.shutdown();
+			}
 		}
 	}
 
+	@Override
 	public String getName() {
 		return this.name;
 	}
 
 	@Override
 	public void onReceived(EventEntry event) {
-		throw new UnsupportedOperationException("Not supported yet.");
+
+		if (event != null) {
+
+			String bucket = event.getHeader().get(Property.CB_BUCKET);
+			CouchbaseClient client = getConnection(bucket);
+
+			if (client != null) {
+				client.add(event.getHeader().get(Property.ID), event.getBody());
+			}
+		}
+	}
+
+	private CouchbaseClient getConnection(String bucket) {
+
+		CouchbaseClient client = null;
+
+		// Check if bucket connection exists otherwise create it
+		if (!knownBuckets.containsKey(bucket)) {
+			try {
+				client = new CouchbaseClient(hosts, bucket, "");
+				knownBuckets.put(bucket, client);
+			} catch (IOException e) {
+				logger.error("Creation of connection threw an exc.", e);
+			}
+		} else {
+			client = knownBuckets.get(bucket);
+		}
+
+		return client;
 	}
 }
