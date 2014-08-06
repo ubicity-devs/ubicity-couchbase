@@ -91,7 +91,7 @@ public class CouchbasePluginImpl extends BrokerConsumer implements
 	}
 
 	@Override
-	public void onReceived(EventEntry event) {
+	public void onReceived(String destination, EventEntry event) {
 
 		if (event != null) {
 
