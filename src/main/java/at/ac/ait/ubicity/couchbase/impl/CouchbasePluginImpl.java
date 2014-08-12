@@ -92,15 +92,16 @@ public class CouchbasePluginImpl extends BrokerConsumer implements
 
 	@Override
 	public void onReceived(String destination, EventEntry event) {
-
 		if (event != null) {
 
 			String bucket = event.getHeader().get(Property.CB_BUCKET);
 			CouchbaseClient client = getConnection(bucket);
 
 			if (client != null) {
-				client.add(event.getHeader().get(Property.ID), event.getBody());
+				client.set(event.getHeader().get(Property.ID), event.getBody());
 			}
+		} else {
+			logger.warn("EventEntry is null");
 		}
 	}
 
