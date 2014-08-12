@@ -104,6 +104,11 @@ public class CouchbasePluginImpl extends BrokerConsumer implements
 		}
 	}
 
+	@Override
+	protected void onReceivedRaw(String destination, String tmsg) {
+		// Not used here
+	}
+
 	private CouchbaseClient getConnection(String bucket) {
 
 		CouchbaseClient client = null;
