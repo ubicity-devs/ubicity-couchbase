@@ -38,26 +38,22 @@ import at.ac.ait.ubicity.couchbase.CouchbasePlugin;
 import com.couchbase.client.CouchbaseClient;
 
 @PluginImplementation
-public class CouchbasePluginImpl extends BrokerConsumer implements
-		CouchbasePlugin {
+public class CouchbasePluginImpl extends BrokerConsumer implements CouchbasePlugin {
 
 	private String name;
 	private static HashMap<String, CouchbaseClient> knownBuckets = new HashMap<String, CouchbaseClient>();
 	private List<URI> hosts;
 
-	protected static Logger logger = Logger
-			.getLogger(CouchbasePluginImpl.class);
+	protected static Logger logger = Logger.getLogger(CouchbasePluginImpl.class);
 
 	@Override
 	@Init
 	public void init() {
-		PropertyLoader config = new PropertyLoader(
-				CouchbasePluginImpl.class.getResource("/couchbase.cfg"));
+		PropertyLoader config = new PropertyLoader(CouchbasePluginImpl.class.getResource("/couchbase.cfg"));
 		this.name = config.getString("plugin.couchbase.name");
 
 		try {
-			super.init(config.getString("plugin.couchbase.broker.user"),
-					config.getString("plugin.couchbase.broker.pwd"));
+			super.init(config.getString("plugin.couchbase.broker.user"), config.getString("plugin.couchbase.broker.pwd"));
 
 			String host = config.getString("plugin.couchbase.host");
 			host = host + ":" + config.getString("env.couchbase.host_port");
@@ -94,11 +90,11 @@ public class CouchbasePluginImpl extends BrokerConsumer implements
 	public void onReceived(String destination, EventEntry event) {
 		if (event != null) {
 
-			String bucket = event.getHeader().get(Property.CB_BUCKET);
+			String bucket = event.getProperty(Property.CB_BUCKET);
 			CouchbaseClient client = getConnection(bucket);
 
 			if (client != null) {
-				client.set(event.getHeader().get(Property.ID), event.getBody());
+				client.set(event.getProperty(Property.ID), event.getBody());
 			}
 		} else {
 			logger.warn("EventEntry is null");

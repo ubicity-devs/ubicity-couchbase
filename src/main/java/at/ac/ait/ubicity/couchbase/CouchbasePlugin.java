@@ -19,10 +19,6 @@ package at.ac.ait.ubicity.couchbase;
 
 import at.ac.ait.ubicity.commons.interfaces.UbicityPlugin;
 
-/**
- *
- * @author jan
- */
 public interface CouchbasePlugin extends UbicityPlugin {
 
 }
